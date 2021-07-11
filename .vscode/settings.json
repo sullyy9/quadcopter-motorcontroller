@@ -1,0 +1,7 @@
+{
+    "clangd.arguments": [
+        "--query-driver=/tools/toolchain/bin/*",
+        "--cross-file-rename",
+        "--log=verbose"
+    ]
+}

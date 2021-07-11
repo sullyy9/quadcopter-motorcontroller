@@ -1,0 +1,27 @@
+FROM alpine:3.13
+
+# Prepare directory for tools
+ARG TOOLS_PATH=/tools
+RUN mkdir ${TOOLS_PATH}
+WORKDIR ${TOOLS_PATH}
+
+# Install basic programs and custom glibc
+RUN apk --no-cache add ca-certificates wget make cmake git \
+	&& wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+	&& wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.32-r0/glibc-2.32-r0.apk \
+	&& apk add glibc-2.32-r0.apk \
+	&& rm glibc-2.32-r0.apk
+
+# Install the AVR toolchain
+RUN apk --no-cache add gcc-avr avr-libc
+
+# Install clangd
+ARG CLANGD_ZIP_URL="https://github.com/clangd/clangd/releases/download/12.0.0/clangd-linux-12.0.0.zip"
+ARG CLANGD_PATH=${TOOLS_PATH}/clangd
+RUN wget ${CLANGD_ZIP_URL} \
+    && export CLANGD_ZIP_FILENAME=$(basename "${CLANGD_ZIP_URL}") \
+    && unzip ${CLANGD_ZIP_FILENAME} \
+    && mv clangd_12.0.0 ${CLANGD_PATH} \
+    && rm ${CLANGD_ZIP_FILENAME}
+
+ENV PATH="${CLANGD_PATH}/bin:${PATH}"
