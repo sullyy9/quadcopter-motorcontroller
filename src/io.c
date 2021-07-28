@@ -2,38 +2,27 @@
  * -------------------------------------------------------------------------------------------------
  * @author  Ryan Sullivan (ryansullivan@googlemail.com)
  *
- * @file    main.c
- * @brief   Main.
+ * @file    io.c
+ * @brief   General purpose io.
  *
- * @date    2021-07-07
+ * @date    2021-07-18
  * -------------------------------------------------------------------------------------------------
  */
 
 #include "types.h"
 
-#include "main.h"
 #include "io.h"
-#include "debug.h"
-#include <stdint.h>
+#include "usart.h"
+#include "port.h"
 
 /*------------------------------------------------------------------------------------------------*/
 /*-constant-definitions---------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
-/*
- * Fuse configuration bytes.
- */
-#pragma clang diagnostic ignored "-Wmissing-variable-declarations"
-NVM_FUSES_t              __fuse
-    __attribute__((section(".fuse"))) = { .WDTCFG = WINDOW_OFF_gc | PERIOD_OFF_gc,
-                                          .BODCFG = LVL_BODLEVEL0_gc | SAMPFREQ_1KHZ_gc |
-                                                    ACTIVE_DIS_gc | SLEEP_DIS_gc,
-                                          .OSCCFG  = FREQSEL_20MHZ_gc,
-                                          .TCD0CFG = 0,
-                                          .SYSCFG0 = CRCSRC_NOCRC_gc | RSTPINCFG_UPDI_gc,
-                                          .SYSCFG1 = SUT_1MS_gc,
-                                          .APPEND  = 0,
-                                          .BOOTEND = 0 };
+#define LED      PORT_A3
+
+#define USART_TX PORT_B2
+#define USART_RX PORT_B3
 
 /*------------------------------------------------------------------------------------------------*/
 /*-exported-variables-----------------------------------------------------------------------------*/
@@ -43,42 +32,58 @@ NVM_FUSES_t              __fuse
 /*-static-variables-------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
-static bool run_main = true;
-
 /*------------------------------------------------------------------------------------------------*/
 /*-forward-declarations---------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
+
+void initialise_pins(void);
 
 /*------------------------------------------------------------------------------------------------*/
 /*-exported-functions-----------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
 /**
- * @brief      Main function.
- * @return int Unused.
+ * @brief   Initialise peripherls.
  */
-int main(void)
+void io_initialise(void)
 {
+    initialise_pins();
 
-    io_initialise();
-    sei(); // Enable interrupts
+    usart_initialise(9600);
+}
 
-    // PORTA.OUTCLR |= PIN3_bm;
+/*------------------------------------------------------------------------------------------------*/
 
-    for(uint32_t i = 0; i < 2000; i++)
-    {
-        debug_printf("hello\r\n");
-        //for(uint32_t j = 0; j < 100000000; j++) {}
-    }
+/**
+ * @brief   Turn on the LED.
+ */
+void io_led_on(void)
+{
+    port_clear(LED);
+}
 
-    while(run_main) {}
+/*------------------------------------------------------------------------------------------------*/
 
-    return (0);
+/**
+ * @brief   Turn off the LED.
+ */
+void io_led_off(void)
+{
+    port_set(LED);
 }
 
 /*------------------------------------------------------------------------------------------------*/
 /*-static-functions-------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
+
+void initialise_pins(void)
+{
+    io_led_off();
+    port_initialise(LED, PORT_MODE_OUTPUT_PUSH_PULL);
+
+    port_initialise(USART_TX, PORT_MODE_OUTPUT_PUSH_PULL);
+    port_initialise(USART_RX, PORT_MODE_INPUT);
+}
 
 /*------------------------------------------------------------------------------------------------*/
 /*-end-of-module----------------------------------------------------------------------------------*/

@@ -18,3 +18,4 @@
 #include "common.h"
 #include "fuse.h"
 #include "lock.h"
+#include "interrupt.h"

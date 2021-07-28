@@ -43,7 +43,8 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO "")
 file(GLOB_RECURSE USER_SOURCES  "src/*.c")
 set(DEVICE_INCLUDES             "${CMAKE_SOURCE_DIR}/lib/include")
 set(DEVICE_LIBRARIES            "${CMAKE_SOURCE_DIR}/lib/built")
-set(LINKER_SCRIPT               "${CMAKE_SOURCE_DIR}/src/avrxmega3.xn")
+set(LINKER_SCRIPT               "${CMAKE_SOURCE_DIR}/src/avrxmega3.x")
+set(SPEC_FILE                   "${CMAKE_SOURCE_DIR}/lib/built/specs-attiny3217")
 
 # Set output file names.
 ####################################################################################################
@@ -59,8 +60,9 @@ add_executable(${PROJECT_ELF}
 
 target_compile_options(${PROJECT_ELF}
     PUBLIC -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common
-    PUBLIC -B "${DEVICE_LIBRARIES}"
-    PRIVATE -Wall -Wextra -Wshadow -Wdouble-promotion -Wundef
+    PUBLIC -B${DEVICE_LIBRARIES}
+    PUBLIC -Wall -Wextra -Wshadow -Wdouble-promotion -Wundef -Wno-unknown-pragmas
+    PUBLIC -specs=${SPEC_FILE}
     )
 
 target_include_directories(${PROJECT_ELF}
@@ -68,9 +70,10 @@ target_include_directories(${PROJECT_ELF}
     )
     
 target_link_options(${PROJECT_ELF}
-    PRIVATE -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common
-    PUBLIC -B "${DEVICE_LIBRARIES}"
-    PRIVATE "LINKER:--gc-sections,-T${LINKER_SCRIPT}"
+    PUBLIC -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common
+    PUBLIC -B${DEVICE_LIBRARIES}
+    PUBLIC -specs=${SPEC_FILE}
+    PUBLIC "LINKER:--gc-sections,-T${LINKER_SCRIPT},-Map,${PROJECT_NAME}.map"
     )
 
 # Add bin and hex files.

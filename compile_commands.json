@@ -1,7 +1,27 @@
 [
 {
   "directory": "/workspaces/quadcopter-motorcontroller/build",
+  "command": "/usr/bin/avr-gcc  -I/workspaces/quadcopter-motorcontroller/lib/include -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common -B /workspaces/quadcopter-motorcontroller/lib/built -Wall -Wextra -Wshadow -Wdouble-promotion -Wundef -o CMakeFiles/quadcopter-motorcontroller.elf.dir/src/debug.c.obj -c /workspaces/quadcopter-motorcontroller/src/debug.c",
+  "file": "/workspaces/quadcopter-motorcontroller/src/debug.c"
+},
+{
+  "directory": "/workspaces/quadcopter-motorcontroller/build",
+  "command": "/usr/bin/avr-gcc  -I/workspaces/quadcopter-motorcontroller/lib/include -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common -B /workspaces/quadcopter-motorcontroller/lib/built -Wall -Wextra -Wshadow -Wdouble-promotion -Wundef -o CMakeFiles/quadcopter-motorcontroller.elf.dir/src/io.c.obj -c /workspaces/quadcopter-motorcontroller/src/io.c",
+  "file": "/workspaces/quadcopter-motorcontroller/src/io.c"
+},
+{
+  "directory": "/workspaces/quadcopter-motorcontroller/build",
   "command": "/usr/bin/avr-gcc  -I/workspaces/quadcopter-motorcontroller/lib/include -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common -B /workspaces/quadcopter-motorcontroller/lib/built -Wall -Wextra -Wshadow -Wdouble-promotion -Wundef -o CMakeFiles/quadcopter-motorcontroller.elf.dir/src/main.c.obj -c /workspaces/quadcopter-motorcontroller/src/main.c",
   "file": "/workspaces/quadcopter-motorcontroller/src/main.c"
+},
+{
+  "directory": "/workspaces/quadcopter-motorcontroller/build",
+  "command": "/usr/bin/avr-gcc  -I/workspaces/quadcopter-motorcontroller/lib/include -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common -B /workspaces/quadcopter-motorcontroller/lib/built -Wall -Wextra -Wshadow -Wdouble-promotion -Wundef -o CMakeFiles/quadcopter-motorcontroller.elf.dir/src/port.c.obj -c /workspaces/quadcopter-motorcontroller/src/port.c",
+  "file": "/workspaces/quadcopter-motorcontroller/src/port.c"
+},
+{
+  "directory": "/workspaces/quadcopter-motorcontroller/build",
+  "command": "/usr/bin/avr-gcc  -I/workspaces/quadcopter-motorcontroller/lib/include -mmcu=attiny3217 -Os -std=c99 -fdata-sections -ffunction-sections -fno-common -B /workspaces/quadcopter-motorcontroller/lib/built -Wall -Wextra -Wshadow -Wdouble-promotion -Wundef -o CMakeFiles/quadcopter-motorcontroller.elf.dir/src/usart.c.obj -c /workspaces/quadcopter-motorcontroller/src/usart.c",
+  "file": "/workspaces/quadcopter-motorcontroller/src/usart.c"
 }
 ]

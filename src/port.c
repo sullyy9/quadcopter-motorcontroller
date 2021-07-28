@@ -2,38 +2,23 @@
  * -------------------------------------------------------------------------------------------------
  * @author  Ryan Sullivan (ryansullivan@googlemail.com)
  *
- * @file    main.c
- * @brief   Main.
+ * @file    port.c
+ * @brief   IO port HAL.
  *
- * @date    2021-07-07
+ * @date    2021-07-18
  * -------------------------------------------------------------------------------------------------
  */
 
 #include "types.h"
 
-#include "main.h"
-#include "io.h"
-#include "debug.h"
-#include <stdint.h>
+#include "port.h"
 
 /*------------------------------------------------------------------------------------------------*/
 /*-constant-definitions---------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
-/*
- * Fuse configuration bytes.
- */
-#pragma clang diagnostic ignored "-Wmissing-variable-declarations"
-NVM_FUSES_t              __fuse
-    __attribute__((section(".fuse"))) = { .WDTCFG = WINDOW_OFF_gc | PERIOD_OFF_gc,
-                                          .BODCFG = LVL_BODLEVEL0_gc | SAMPFREQ_1KHZ_gc |
-                                                    ACTIVE_DIS_gc | SLEEP_DIS_gc,
-                                          .OSCCFG  = FREQSEL_20MHZ_gc,
-                                          .TCD0CFG = 0,
-                                          .SYSCFG0 = CRCSRC_NOCRC_gc | RSTPINCFG_UPDI_gc,
-                                          .SYSCFG1 = SUT_1MS_gc,
-                                          .APPEND  = 0,
-                                          .BOOTEND = 0 };
+#define PORT_MASK(pin) (*(PORT_t *)(0x400 + ((pin / 8) * 0x20)))
+#define PIN_MASK(pin)  (uint8_t)(1 << (pin % 8))
 
 /*------------------------------------------------------------------------------------------------*/
 /*-exported-variables-----------------------------------------------------------------------------*/
@@ -42,8 +27,6 @@ NVM_FUSES_t              __fuse
 /*------------------------------------------------------------------------------------------------*/
 /*-static-variables-------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
-
-static bool run_main = true;
 
 /*------------------------------------------------------------------------------------------------*/
 /*-forward-declarations---------------------------------------------------------------------------*/
@@ -54,26 +37,99 @@ static bool run_main = true;
 /*------------------------------------------------------------------------------------------------*/
 
 /**
- * @brief      Main function.
- * @return int Unused.
+ * @brief       Initialise a pin to the specified mode.
+ * @param pin   Pin to be initialised.
+ * @param mode  Mode the pin will be initialised to.
  */
-int main(void)
+void port_initialise(pin_t pin, pin_mode_t mode)
 {
-
-    io_initialise();
-    sei(); // Enable interrupts
-
-    // PORTA.OUTCLR |= PIN3_bm;
-
-    for(uint32_t i = 0; i < 2000; i++)
+    /*
+     *  Initialise as input or output.
+     */
+    if(mode <= PORT_MODE_OUTPUT_PULLUP)
     {
-        debug_printf("hello\r\n");
-        //for(uint32_t j = 0; j < 100000000; j++) {}
+        PORT_MASK(pin).DIRSET = PIN_MASK(pin);
+    }
+    else
+    {
+        PORT_MASK(pin).DIRCLR = PIN_MASK(pin);
     }
 
-    while(run_main) {}
+    /*
+     * Initialise the pullup if requested.
+     */
+    if(mode == PORT_MODE_OUTPUT_PULLUP || mode == PORT_MODE_INPUT_PULLUP)
+    {
+        switch(pin % 8)
+        {
+            case 0:
+            {
+                PORT_MASK(pin).PIN0CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            case 1:
+            {
+                PORT_MASK(pin).PIN1CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            case 2:
+            {
+                PORT_MASK(pin).PIN2CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            case 3:
+            {
+                PORT_MASK(pin).PIN3CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            case 4:
+            {
+                PORT_MASK(pin).PIN4CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            case 5:
+            {
+                PORT_MASK(pin).PIN5CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            case 6:
+            {
+                PORT_MASK(pin).PIN6CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            case 7:
+            {
+                PORT_MASK(pin).PIN7CTRL = PORT_PULLUPEN_bm;
+                break;
+            }
+            default:
+            {
+                break;
+            }
+        }
+    }
+}
 
-    return (0);
+/*------------------------------------------------------------------------------------------------*/
+
+/**
+ * @brief       Set a pin to a high logic level.
+ * @param pin   Pin to set.
+ */
+void port_set(pin_t pin)
+{
+    PORT_MASK(pin).OUTSET |= PIN_MASK(pin);
+}
+
+/*------------------------------------------------------------------------------------------------*/
+
+/**
+ * @brief       Set a pin to a low logic level.
+ * @param pin   Pin to set.
+ */
+void port_clear(pin_t pin)
+{
+    PORT_MASK(pin).OUTCLR |= PIN_MASK(pin);
 }
 
 /*------------------------------------------------------------------------------------------------*/

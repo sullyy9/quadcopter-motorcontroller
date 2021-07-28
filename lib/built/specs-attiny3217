@@ -65,7 +65,6 @@
 
 *link_text_start:
 
-
 *self_spec:
 	%<mmcu=* -mmcu=avrxmega3 %<mshort-calls %<msp8
 

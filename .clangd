@@ -1,6 +1,7 @@
 ---
 CompileFlags:
-    Add: ["--target=arm-arm-none-eabi"]
+    Remove: [-mmcu=attiny3217]
+    Add: [--target=avr, -mmcu=avrxmega3]
 
 ---
 If:
@@ -18,7 +19,9 @@ If:
 CompileFlags:
     Add: [-Weverything,
           -Wno-covered-switch-default,
-          -Wno-gnu-binary-literal]
+          -Wno-gnu-binary-literal,
+          -Wno-unknown-attributes,
+          -Wno-gnu-zero-variadic-macro-arguments]
 
 ---
 If:
