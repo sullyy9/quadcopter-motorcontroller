@@ -14,26 +14,12 @@
 #include "main.h"
 #include "io.h"
 #include "debug.h"
-#include <stdint.h>
+#include "system.h"
+#include "utils.h"
 
 /*------------------------------------------------------------------------------------------------*/
 /*-constant-definitions---------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
-
-/*
- * Fuse configuration bytes.
- */
-#pragma clang diagnostic ignored "-Wmissing-variable-declarations"
-NVM_FUSES_t              __fuse
-    __attribute__((section(".fuse"))) = { .WDTCFG = WINDOW_OFF_gc | PERIOD_OFF_gc,
-                                          .BODCFG = LVL_BODLEVEL0_gc | SAMPFREQ_1KHZ_gc |
-                                                    ACTIVE_DIS_gc | SLEEP_DIS_gc,
-                                          .OSCCFG  = FREQSEL_20MHZ_gc,
-                                          .TCD0CFG = 0,
-                                          .SYSCFG0 = CRCSRC_NOCRC_gc | RSTPINCFG_UPDI_gc,
-                                          .SYSCFG1 = SUT_1MS_gc,
-                                          .APPEND  = 0,
-                                          .BOOTEND = 0 };
 
 /*------------------------------------------------------------------------------------------------*/
 /*-exported-variables-----------------------------------------------------------------------------*/
@@ -59,26 +45,42 @@ static bool run_main = true;
  */
 int main(void)
 {
-
+    system_initialise();
+    system_timer_initialise();
     io_initialise();
-    sei(); // Enable interrupts
+
+    /*
+     * Enable interupts.
+     */
+    sei();
 
     // PORTA.OUTCLR |= PIN3_bm;
 
-    for(uint32_t i = 0; i < 2000; i++)
+    while(run_main)
     {
         debug_printf("hello\r\n");
-        //for(uint32_t j = 0; j < 100000000; j++) {}
+        utils_wait_ms(1000);
     }
-
-    while(run_main) {}
 
     return (0);
 }
 
 /*------------------------------------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------------------------------*/
 /*-static-functions-------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
+
+/**
+ * @brief   1ms system timer interrupt.
+ */
+ISR(TCA0_OVF_vect)
+{
+    TCA0.SINGLE.INTFLAGS = TCA_SINGLE_OVF_bm;
+
+    io_1ms_poll();
+    utils_1ms_poll();
+}
 
 /*------------------------------------------------------------------------------------------------*/
 /*-end-of-module----------------------------------------------------------------------------------*/

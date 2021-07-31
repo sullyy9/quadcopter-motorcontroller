@@ -2,27 +2,36 @@
  * -------------------------------------------------------------------------------------------------
  * @author  Ryan Sullivan (ryansullivan@googlemail.com)
  *
- * @file    io.c
- * @brief   General purpose io.
+ * @file    system.c
+ * @brief   Internal configuration functions.
  *
- * @date    2021-07-18
+ * @date    2021-07-31
  * -------------------------------------------------------------------------------------------------
  */
 
 #include "types.h"
 
-#include "io.h"
-#include "usart.h"
-#include "port.h"
+#include "system.h"
 
 /*------------------------------------------------------------------------------------------------*/
 /*-constant-definitions---------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
-#define LED      PORT_A3
+/*
+ * Fuse configuration bytes.
+ */
+#pragma clang diagnostic ignored "-Wmissing-variable-declarations"
 
-#define USART_TX PORT_B2
-#define USART_RX PORT_B3
+NVM_FUSES_t __fuse
+    __attribute__((section(".fuse"))) = { .WDTCFG = WINDOW_OFF_gc | PERIOD_OFF_gc,
+                                          .BODCFG = LVL_BODLEVEL0_gc | SAMPFREQ_1KHZ_gc |
+                                                    ACTIVE_DIS_gc | SLEEP_DIS_gc,
+                                          .OSCCFG  = FREQSEL_20MHZ_gc,
+                                          .TCD0CFG = 0,
+                                          .SYSCFG0 = CRCSRC_NOCRC_gc | RSTPINCFG_UPDI_gc,
+                                          .SYSCFG1 = SUT_1MS_gc,
+                                          .APPEND  = 0,
+                                          .BOOTEND = 0 };
 
 /*------------------------------------------------------------------------------------------------*/
 /*-exported-variables-----------------------------------------------------------------------------*/
@@ -32,89 +41,49 @@
 /*-static-variables-------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
-static volatile bool led_on = false;
-static volatile uint16_t led_count = 0;
-
 /*------------------------------------------------------------------------------------------------*/
 /*-forward-declarations---------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
-
-void initialise_pins(void);
 
 /*------------------------------------------------------------------------------------------------*/
 /*-exported-functions-----------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
 /**
- * @brief   Initialise peripherals.
+ * @brief   Initialise the system clocks.
  */
-void io_initialise(void)
+void system_initialise(void)
 {
-    initialise_pins();
-
-    usart_initialise(9600);
+    /*
+     * Disable the prescaler to run the main clock at 20MHz.
+     * Need to write the correct key to the config change protection register.
+     */
+     CPU_CCP = CCP_IOREG_gc;
+     CLKCTRL.MCLKCTRLB = 0;
 }
 
 /*------------------------------------------------------------------------------------------------*/
 
 /**
- * @brief   Turn on the onboard LED.
+ * @brief   Initialise TCA as a 1ms timer. ISR in main.
  */
-void io_led_on(void)
+void system_timer_initialise(void)
 {
-    port_clear(LED);
-}
+    TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc;
+    TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_NORMAL_gc;
+    TCA0.SINGLE.PER = 20000;
 
-/*------------------------------------------------------------------------------------------------*/
+    TCA0.SINGLE.INTCTRL = TCA_SINGLE_OVF_bm;
 
-/**
- * @brief   Turn off the onboard LED.
- */
-void io_led_off(void)
-{
-    port_set(LED);
-}
+    TCA0.SINGLE.CTRLA = TCA_SINGLE_ENABLE_bm;
 
-/*------------------------------------------------------------------------------------------------*/
 
-/**
- * @brief Poll for the io module. Called by the TCA interupt in main.
- */
-void io_1ms_poll(void)
-{
-    led_count++;
-
-    if(led_count >= 1000)
-    {
-        led_count = 0;
-        if(led_on == true)
-        {
-            io_led_off();
-            led_on = false;
-        }
-        else
-        {
-            io_led_on();
-            led_on = true;
-        }
-    }
+    
 }
 
 /*------------------------------------------------------------------------------------------------*/
 /*-static-functions-------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
-
-/**
- * @brief Initialise any used pins to their respective modes.
- */
-void initialise_pins(void)
-{
-    io_led_off();
-    port_initialise(LED, PORT_MODE_OUTPUT_PUSH_PULL);
-
-    port_initialise(USART_TX, PORT_MODE_OUTPUT_PUSH_PULL);
-    port_initialise(USART_RX, PORT_MODE_INPUT);
-}
 
 /*------------------------------------------------------------------------------------------------*/
 /*-end-of-module----------------------------------------------------------------------------------*/

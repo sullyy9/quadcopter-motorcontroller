@@ -27,11 +27,11 @@
 /*-static-variables-------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------------------------*/
 
-static volatile uint8_t  usart0_tx_buffer[USART0_TX_BUFFER_SIZE];
-static volatile uint8_t usart0_tx_in_ptr = 0;
-static volatile uint8_t usart0_tx_out_ptr = 0;
+static volatile uint8_t usart0_tx_buffer[USART0_TX_BUFFER_SIZE];
+static volatile uint8_t usart0_tx_in_ptr         = 0;
+static volatile uint8_t usart0_tx_out_ptr        = 0;
 static volatile uint8_t usart0_tx_buffered_bytes = 0;
-static volatile bool usart0_tx_in_progress = false;
+static volatile bool    usart0_tx_in_progress    = false;
 
 /*------------------------------------------------------------------------------------------------*/
 /*-forward-declarations---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ static volatile bool usart0_tx_in_progress = false;
  */
 void usart_initialise(uint16_t baud_rate)
 {
-    USART0.BAUD = (uint16_t)(3333333 * 64 / (16 * (float)baud_rate) + 0.5f);
+    USART0.BAUD = (uint16_t)(F_CPU * 64 / (16 * (float)baud_rate) + 0.5f);
 
     USART0.CTRLA = USART_TXCIE_bm;
     USART0.CTRLB = USART_TXEN_bm;
@@ -98,7 +98,7 @@ void usart0_tx_byte(uint8_t byte)
  */
 uint8_t usart0_tx_free(void)
 {
-    return(USART0_TX_BUFFER_SIZE - usart0_tx_buffered_bytes);
+    return (USART0_TX_BUFFER_SIZE - usart0_tx_buffered_bytes);
 }
 
 /*------------------------------------------------------------------------------------------------*/
@@ -106,9 +106,10 @@ uint8_t usart0_tx_free(void)
 /**
  * @brief   USART0 transmit interrupt function. Send the next byte to the output register.
  */
-ISR(USART0_TXC_vect) {
+ISR(USART0_TXC_vect)
+{
     USART0.STATUS |= USART_TXCIF_bm;
-    
+
     if(usart0_tx_buffered_bytes > 0)
     {
         USART0.TXDATAL = usart0_tx_buffer[usart0_tx_out_ptr];
